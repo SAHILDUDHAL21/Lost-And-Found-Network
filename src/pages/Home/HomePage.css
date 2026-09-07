@@ -440,6 +440,97 @@
   color: #ef9a9a;
 }
 
+/* CRUD Action Buttons */
+.item-crud-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.crud-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-h);
+  cursor: pointer;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.crud-btn:hover {
+  background: var(--surface-muted);
+  transform: translateY(-1px);
+}
+
+.crud-btn-danger {
+  color: #c62828;
+  border-color: color-mix(in srgb, #c62828 40%, transparent);
+  background: color-mix(in srgb, #c62828 10%, transparent);
+}
+
+.crud-btn-danger:hover {
+  background: color-mix(in srgb, #c62828 20%, transparent);
+}
+
+.claim-status-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.status-chip-btn {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-h);
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+
+.status-chip-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.status-chip-accept {
+  background: color-mix(in srgb, #2e7d32 20%, transparent);
+  border-color: #2e7d32;
+  color: #2e7d32;
+  font-weight: 800;
+}
+
+:root[data-theme='dark'] .status-chip-accept {
+  color: #81c784;
+}
+
+.status-chip-accept:hover {
+  background: #2e7d32 !important;
+  color: #ffffff !important;
+}
+
+.claim-item.is-verified-owner {
+  border: 2px solid #2e7d32 !important;
+  background: color-mix(in srgb, #2e7d32 10%, var(--surface)) !important;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15) !important;
+}
+
+.badge-verified-owner {
+  background: #2e7d32;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(46, 125, 50, 0.25);
+}
+
 /* Feed Control Header */
 .feed-header {
   display: flex;
@@ -923,13 +1014,27 @@
   z-index: 100;
   display: grid;
   place-items: center;
-  padding: 20px;
+  padding: 24px 16px;
+  overflow-y: auto;
 }
 
 .modal-content {
   width: 100%;
   max-width: 580px;
+  max-height: 88vh;
+  overflow-y: auto;
   position: relative;
+  scrollbar-width: thin !important;
+}
+
+.modal-content::-webkit-scrollbar {
+  display: block !important;
+  width: 6px !important;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--border) 80%, white);
+  border-radius: 999px;
 }
 
 .modal-header {

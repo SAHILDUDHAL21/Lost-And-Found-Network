@@ -1,42 +1,48 @@
 import { useState } from 'react'
 import Header from '../../components/Header'
+import { registerUser } from '../../api/apiService'
 
 function RegisterPage({ user, onLogout, onRegisterSuccess }) {
-  const [step, setStep] = useState(1)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [otp, setOtp] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSendOtp = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault()
-    if (!name.trim() || !email.trim() || !phone.trim() || !password || !confirmPassword) {
-      setError('Please fill in all fields.')
+    if (!name.trim() || !email.trim() || !password) {
+      setError('Please fill in all required fields.')
       return
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match. Please check and try again.')
+      setError('Passwords do not match. Please re-enter your password.')
       return
     }
-    setError('')
-    setStep(2)
-  }
 
-  const handleVerifyOtp = (e) => {
-    e.preventDefault()
-    if (otp.trim() === '000000') {
-      setError('')
-      const userData = { name: name.trim(), email: email.trim(), phone: phone.trim() }
+    setError('')
+    setLoading(true)
+
+    const userData = {
+      fullName: name.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      password
+    }
+
+    const res = await registerUser(userData)
+    setLoading(false)
+
+    if (res && res.success && res.user) {
       if (onRegisterSuccess) {
-        onRegisterSuccess(userData)
+        onRegisterSuccess(res.user)
       } else {
-        window.location.hash = '#home'
+        window.location.hash = '#feed'
       }
     } else {
-      setError('Invalid OTP code. Use demo OTP: 000000')
+      setError(res?.message || 'Registration failed. Email may already be registered.')
     }
   }
 
@@ -48,129 +54,84 @@ function RegisterPage({ user, onLogout, onRegisterSuccess }) {
         <div className="torn-paper-wrapper">
           <section className="torn-paper">
             <p className="eyebrow">Join the Community</p>
-            <h1>{step === 1 ? 'Register Account' : 'Verify Email OTP'}</h1>
+            <h1>Register Account</h1>
 
-            <div className="demo-badge">
-              <span>📧 Demo Email OTP:</span>
-              <code>000000</code>
-            </div>
+            {error && <div className="error-message" style={{ marginBottom: '20px' }}>{error}</div>}
 
-            {error && <div className="error-message">{error}</div>}
+            <form onSubmit={handleRegister}>
+              <div className="form-group">
+                <label htmlFor="name">Full Name</label>
+                <input
+                  id="name"
+                  className="form-input"
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
 
-            {step === 1 ? (
-              <form onSubmit={handleSendOtp}>
-                <div className="form-group">
-                  <label htmlFor="name">Full Name</label>
-                  <input
-                    id="name"
-                    className="form-input"
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="email">Email Address</label>
+                <input
+                  id="email"
+                  className="form-input"
+                  type="email"
+                  placeholder="user@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="email">Email Address (OTP will be sent here)</label>
-                  <input
-                    id="email"
-                    className="form-input"
-                    type="email"
-                    placeholder="user@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="phone">Phone Number</label>
+                <input
+                  id="phone"
+                  className="form-input"
+                  type="tel"
+                  placeholder="+91 9876543210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="phone">Phone Number</label>
-                  <input
-                    id="phone"
-                    className="form-input"
-                    type="tel"
-                    placeholder="e.g. +1 555-0199"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  id="password"
+                  className="form-input"
+                  type="password"
+                  placeholder="Create a password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="password">Password</label>
-                  <input
-                    id="password"
-                    className="form-input"
-                    type="password"
-                    placeholder="Create a password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="confirmPassword">Confirm Password</label>
+                <input
+                  id="confirmPassword"
+                  className="form-input"
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="confirmPassword">Confirm Password</label>
-                  <input
-                    id="confirmPassword"
-                    className="form-input"
-                    type="password"
-                    placeholder="Confirm your password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div style={{ marginTop: '28px', display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <button className="primary-button" type="submit">
-                    Send Email OTP <span aria-hidden="true">-&gt;</span>
-                  </button>
-                  <a className="secondary-button" href="#login">
-                    Login
-                  </a>
-                </div>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp}>
-                <p style={{ marginBottom: '18px', color: 'var(--ink-soft)', fontSize: '0.94rem' }}>
-                  An OTP code has been sent to <strong>{email}</strong> (Demo OTP: <code>000000</code>):
-                </p>
-
-                <div className="form-group">
-                  <label htmlFor="otp">6-Digit Email OTP</label>
-                  <input
-                    id="otp"
-                    className="form-input"
-                    type="text"
-                    maxLength="6"
-                    placeholder="000000"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    style={{ letterSpacing: '0.3em', fontSize: '1.2rem', fontWeight: '700' }}
-                    required
-                  />
-                </div>
-
-                <div style={{ marginTop: '28px', display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <button className="primary-button" type="submit">
-                    Verify OTP &amp; Register <span aria-hidden="true">-&gt;</span>
-                  </button>
-                  <button
-                    className="secondary-button"
-                    type="button"
-                    onClick={() => {
-                      setStep(1)
-                      setError('')
-                    }}
-                  >
-                    Edit Info
-                  </button>
-                </div>
-              </form>
-            )}
+              <div style={{ marginTop: '28px', display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <button className="primary-button" type="submit" disabled={loading}>
+                  {loading ? 'Creating Account...' : 'Register Account ->'}
+                </button>
+                <a className="secondary-button" href="#login">
+                  Login Instead
+                </a>
+              </div>
+            </form>
 
             <div style={{ marginTop: '28px', paddingTop: '16px', borderTop: '1px dotted var(--notebook-rule)' }}>
               <a href="#home" style={{ color: 'var(--ink-muted)', fontSize: '0.9rem', fontWeight: '700', textDecoration: 'none' }}>

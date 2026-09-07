@@ -1,23 +1,25 @@
 import { useState } from 'react'
 import Header from '../../components/Header'
+import { loginUser } from '../../api/apiService'
 
 function LoginPage({ user, onLogout, onLoginSuccess }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (email.trim() && password.trim() === 'pass1') {
-      setError('')
-      const userData = { name: email.split('@')[0], email: email.trim() }
-      if (onLoginSuccess) {
-        onLoginSuccess(userData)
-      } else {
-        window.location.hash = '#home'
-      }
+    setError('')
+    setLoading(true)
+
+    const res = await loginUser({ email: email.trim(), password })
+    setLoading(false)
+
+    if (res && res.success && res.user) {
+      if (onLoginSuccess) onLoginSuccess(res.user)
     } else {
-      setError('Invalid credentials. Demo password is: pass1')
+      setError(res?.message || 'Invalid email or password. Please try again or register a new account.')
     }
   }
 
@@ -31,12 +33,7 @@ function LoginPage({ user, onLogout, onLoginSuccess }) {
             <p className="eyebrow">Account Access</p>
             <h1>Login</h1>
 
-            <div className="demo-badge">
-              <span>💡 Demo Login:</span>
-              <span>Any Email / Password: <code>pass1</code></span>
-            </div>
-
-            {error && <div className="error-message">{error}</div>}
+            {error && <div className="error-message" style={{ marginBottom: '20px' }}>{error}</div>}
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
@@ -45,7 +42,7 @@ function LoginPage({ user, onLogout, onLoginSuccess }) {
                   id="email"
                   className="form-input"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Enter your registered email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -58,7 +55,7 @@ function LoginPage({ user, onLogout, onLoginSuccess }) {
                   id="password"
                   className="form-input"
                   type="password"
-                  placeholder="Enter password (pass1)"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -66,11 +63,11 @@ function LoginPage({ user, onLogout, onLoginSuccess }) {
               </div>
 
               <div style={{ marginTop: '28px', display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
-                <button className="primary-button" type="submit">
-                  Login <span aria-hidden="true">-&gt;</span>
+                <button className="primary-button" type="submit" disabled={loading}>
+                  {loading ? 'Authenticating...' : 'Login ->'}
                 </button>
                 <a className="secondary-button" href="#register">
-                  Register
+                  Register Account
                 </a>
               </div>
             </form>
