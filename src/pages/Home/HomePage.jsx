@@ -374,7 +374,7 @@ function HomePage({ user, onLogout }) {
                 <div className="torn-paper-wrapper">
                   <div className="torn-paper" style={{ textAlign: 'center', padding: '40px' }}>
                     <p style={{ fontSize: '1.1rem', color: 'var(--ink-soft)' }}>
-                      Connecting to Aiven PostgreSQL database...
+                      Loading (Dam Kadha) ...
                     </p>
                   </div>
                 </div>
