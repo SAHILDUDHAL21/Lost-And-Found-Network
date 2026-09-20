@@ -674,7 +674,7 @@ function HomePage({ user, onLogout }) {
                       <small style={{ color: 'var(--ink-muted)' }}>Flagged Profiles &amp; Fake Claimants</small>
                     </div>
                   </div>
-                  <button
+                  {/* <button
                     className="crud-btn crud-btn-danger"
                     onClick={() => {
                       if (!requireAuth('flag a scammer profile')) return
@@ -683,7 +683,7 @@ function HomePage({ user, onLogout }) {
                     title="Flag a new fake claimant profile"
                   >
                     Flag Scammer
-                  </button>
+                  </button> */}
                 </div>
 
                 <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', margin: '12px 0 16px' }}>
