@@ -7,10 +7,72 @@ function LoginPage({ user, onLogout, onLoginSuccess }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({})
+  const [touched, setTouched] = useState({})
+
+  const validateField = (name, value) => {
+    let err = ''
+    if (name === 'email') {
+      const trimmed = value.trim()
+      if (!trimmed) {
+        err = 'Email address is required.'
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+        err = 'Please enter a valid email address (e.g. user@example.com).'
+      }
+    } else if (name === 'password') {
+      if (!value) {
+        err = 'Password is required.'
+      } else if (value.length < 6) {
+        err = 'Password must be at least 6 characters long.'
+      }
+    }
+    return err
+  }
+
+  const validateForm = () => {
+    const emailErr = validateField('email', email)
+    const passwordErr = validateField('password', password)
+    const errors = {}
+    if (emailErr) errors.email = emailErr
+    if (passwordErr) errors.password = passwordErr
+
+    setFieldErrors(errors)
+    setTouched({ email: true, password: true })
+
+    return Object.keys(errors).length === 0
+  }
+
+  const handleBlur = (field) => {
+    setTouched((prev) => ({ ...prev, [field]: true }))
+    const val = field === 'email' ? email : password
+    const err = validateField(field, val)
+    setFieldErrors((prev) => ({ ...prev, [field]: err }))
+  }
+
+  const handleEmailChange = (e) => {
+    const val = e.target.value
+    setEmail(val)
+    if (touched.email) {
+      setFieldErrors((prev) => ({ ...prev, email: validateField('email', val) }))
+    }
+  }
+
+  const handlePasswordChange = (e) => {
+    const val = e.target.value
+    setPassword(val)
+    if (touched.password) {
+      setFieldErrors((prev) => ({ ...prev, password: validateField('password', val) }))
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (!validateForm()) {
+      return
+    }
+
     setLoading(true)
 
     const res = await loginUser({ email: email.trim(), password })
@@ -35,31 +97,37 @@ function LoginPage({ user, onLogout, onLoginSuccess }) {
 
             {error && <div className="error-message" style={{ marginBottom: '20px' }}>{error}</div>}
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="form-group">
                 <label htmlFor="email">Email Address</label>
                 <input
                   id="email"
-                  className="form-input"
+                  className={`form-input ${touched.email && fieldErrors.email ? 'has-error' : ''}`}
                   type="email"
                   placeholder="Enter your registered email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                  onChange={handleEmailChange}
+                  onBlur={() => handleBlur('email')}
                 />
+                {touched.email && fieldErrors.email && (
+                  <span className="field-error-text">{fieldErrors.email}</span>
+                )}
               </div>
 
               <div className="form-group">
                 <label htmlFor="password">Password</label>
                 <input
                   id="password"
-                  className="form-input"
+                  className={`form-input ${touched.password && fieldErrors.password ? 'has-error' : ''}`}
                   type="password"
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  onChange={handlePasswordChange}
+                  onBlur={() => handleBlur('password')}
                 />
+                {touched.password && fieldErrors.password && (
+                  <span className="field-error-text">{fieldErrors.password}</span>
+                )}
               </div>
 
               <div style={{ marginTop: '28px', display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -85,3 +153,4 @@ function LoginPage({ user, onLogout, onLoginSuccess }) {
 }
 
 export default LoginPage
+
