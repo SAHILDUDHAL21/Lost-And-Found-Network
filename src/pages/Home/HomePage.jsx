@@ -266,7 +266,7 @@ function HomePage({ user, onLogout }) {
   // CREATE COMMENT (POST /api/comments -> PostgreSQL)
   const handleAddComment = async (postId, e) => {
     e.preventDefault()
-    if (!requireAuth('leave a comment')) return
+    if (!requireAuth('comment')) return
 
     const text = commentInputs[postId]?.trim()
     if (!text) return
@@ -327,12 +327,12 @@ function HomePage({ user, onLogout }) {
   }
 
   const handleToggleClaimForm = (postId) => {
-    if (!requireAuth('claim ownership of an item')) return
+    if (!requireAuth('claim ownership')) return
     setActiveClaimPostId(activeClaimPostId === postId ? null : postId)
   }
 
   const handleOpenNewPostModal = () => {
-    if (!requireAuth('report a found item')) return
+    if (!requireAuth('report an item')) return
     setShowNewPostModal(true)
   }
 
@@ -643,11 +643,30 @@ function HomePage({ user, onLogout }) {
                                 type="text"
                                 placeholder={user ? "Add a comment..." : "Login required to comment..."}
                                 value={commentInputs[post.id] || ''}
-                                onChange={(e) =>
+                                onFocus={() => {
+                                  if (!user) requireAuth('comment')
+                                }}
+                                onClick={() => {
+                                  if (!user) requireAuth('comment')
+                                }}
+                                onChange={(e) => {
+                                  if (!user) {
+                                    requireAuth('comment')
+                                    return
+                                  }
                                   setCommentInputs({ ...commentInputs, [post.id]: e.target.value })
-                                }
+                                }}
                               />
-                              <button className="primary-button post-comment-btn" type="submit">
+                              <button
+                                className="primary-button post-comment-btn"
+                                type="submit"
+                                onClick={(e) => {
+                                  if (!user) {
+                                    e.preventDefault()
+                                    requireAuth('comment')
+                                  }
+                                }}
+                              >
                                 Post
                               </button>
                             </form>
@@ -959,6 +978,105 @@ function HomePage({ user, onLogout }) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* AUTHENTICATION REQUIRED PROMPT MODAL */}
+      {showAuthModal && (
+        <div className="modal-backdrop" onClick={() => setShowAuthModal(false)}>
+          <div
+            className="modal-content torn-paper"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '440px', textAlign: 'center', padding: '32px 24px' }}
+          >
+            <header className="modal-header" style={{ justifyContent: 'center', position: 'relative', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '1.4rem', margin: 0 }}>Login Required</h2>
+              <button
+                className="modal-close-btn"
+                onClick={() => setShowAuthModal(false)}
+                style={{ position: 'absolute', right: 0, top: '-4px' }}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </header>
+
+            <p style={{ color: 'var(--ink-soft)', marginBottom: '24px', fontSize: '0.95rem', lineHeight: '1.5' }}>
+              {authActionReason
+                ? `Login is required to ${authActionReason}. Please log in or register an account.`
+                : 'Login is required to proceed. Please log in or register an account.'}
+            </p>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <a
+                href="#login"
+                className="primary-button"
+                onClick={() => setShowAuthModal(false)}
+                style={{ textDecoration: 'none', minWidth: '110px', textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                Login
+              </a>
+              <a
+                href="#register"
+                className="secondary-button"
+                onClick={() => setShowAuthModal(false)}
+                style={{ textDecoration: 'none', minWidth: '110px', textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                Register
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE SCAMMER BOARD DRAWER */}
+      {showDrawer && (
+        <div className="drawer-backdrop" onClick={() => setShowDrawer(false)}>
+          <div className="drawer-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-handle" />
+            <header className="drawer-header">
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>Scammer Leaderboard</h3>
+                <small style={{ color: 'var(--ink-muted)' }}>Flagged Profiles &amp; Fake Claimants</small>
+              </div>
+              <button
+                className="modal-close-btn"
+                onClick={() => setShowDrawer(false)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </header>
+
+            <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', margin: '14px 0 16px' }}>
+              Profiles publicly flagged for submitting false ownership claims without proof:
+            </p>
+
+            <div className="scammer-profile-list">
+              {scammers.length === 0 ? (
+                <p style={{ fontSize: '0.85rem', color: 'var(--ink-muted)', fontStyle: 'italic', textAlign: 'center', padding: '20px 0' }}>
+                  No flagged scammer profiles in database yet.
+                </p>
+              ) : (
+                scammers.map((profile) => (
+                  <div key={profile.id} className="scammer-profile-card">
+                    <img className="scammer-profile-avatar" src={profile.avatar || DEFAULT_AVATAR} alt={profile.fullName} />
+                    
+                    <div className="scammer-profile-info">
+                      <div className="scammer-user-row">
+                        <strong className="scammer-fullname">{profile.fullName}</strong>
+                        <span className="badge-red">{profile.failedClaimsCount} Fake Claim{profile.failedClaimsCount !== 1 ? 's' : ''}</span>
+                      </div>
+                      <span className="scammer-username">{profile.username}</span>
+                      <p className="scammer-reason">
+                        <strong>Reason:</strong> {profile.reason}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}
