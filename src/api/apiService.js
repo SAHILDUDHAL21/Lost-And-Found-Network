@@ -1,5 +1,6 @@
-const API_BASE_URL = 'http://localhost:8080/api';
-// const API_BASE_URL = 'https://lostandfoundbackend-q8yc.onrender.com/api';
+// const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://lostandfoundbackend-q8yc.onrender.com/api';
+
 
 
 // Helper to get stored auth headers with JWT token
